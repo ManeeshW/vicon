@@ -9,8 +9,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 find_package(pybind11 REQUIRED)
 
 # Include directories
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/libraries/eigen)
+# include_directories(${PROJECT_SOURCE_DIR}/include)
+# include_directories(${PROJECT_SOURCE_DIR}/libraries/eigen)
+
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+include_directories(${EIGEN3_INCLUDE_DIRS})
+add_definitions(${EIGEN3_DEFINITIONS})
+
 
 #the VRPN library is installed path
 link_directories("/usr/local/lib/")
