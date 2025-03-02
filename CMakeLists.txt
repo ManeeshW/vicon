@@ -9,7 +9,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 find_package(pybind11 REQUIRED)
 
 # Include directories
-# include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 # include_directories(${PROJECT_SOURCE_DIR}/libraries/eigen)
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
