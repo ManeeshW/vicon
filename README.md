@@ -18,7 +18,7 @@ Ensure the following dependencies are installed on your system (macOS or Linux):
 
 #### macOS (using Homebrew)
 ```bash
-brew install cmake eigen vrpn python pybind11
+brew install cmake eigen vrpn python pybind11 jsoncpp
 ```
 
 #### Linux (using apt on Ubuntu/Debian)
@@ -39,12 +39,29 @@ pip3 install pybind11
 
 If VRPN and Quat are not available via package managers or you need a specific version for Vicon Tracker 4, follow these steps.
 
+
+#### Method (Mac)
+```bash 
+git clone https://github.com/vrpn/vrpn.git
+cd vrpn
+
+# Initialize submodules (for jsoncpp)
+git submodule update --init
+mkdir build && cd build
+
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+# Optional: Enable QUATLIB
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DVRPN_BUILD_QUATLIB=ON
+make -j$(sysctl -n hw.ncpu)
+sudo make install
+```
 #### Recommended Method (Linux)
 ```bash
 sudo apt install libusb-1.0-0-dev libpthread-stubs0-dev
 sudo apt install -y build-essential cmake git libusb-1.0-0-dev libjpeg-dev libglfw3-dev libglew-dev
 git clone https://github.com/vrpn/vrpn.git
 cd vrpn
+git submodule update --init
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local  
 (optional -DVRPN_BUILD_QUATLIB=ON )
