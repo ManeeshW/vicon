@@ -1,35 +1,35 @@
-#include <stdio.h>
-#include <iostream>
+#ifndef FDCL_MATRIX_UTILS_HPP
+#define FDCL_MATRIX_UTILS_HPP
+
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
+#include <iostream>
+#include <cmath>
 
-#include "fdcl/matrix_utils.hpp"
+using Eigen::Matrix3d;
+using Eigen::Vector3d;
 
-using Eigen::MatrixXd;
-
-
-Matrix3 hat(const Vector3 v)
+Matrix3d hat(const Vector3d v)
 {
-    Matrix3 V;
+    Matrix3d V;
 
     V.setZero();
-    V(2, 1) = v(0); V(1, 2) =- V(2, 1);
-    V(0, 2) = v(1); V(2, 0) =- V(0, 2);
-    V(1, 0) = v(2); V(0, 1) =- V(1, 0);
+    V(2, 1) = v(0); V(1, 2) = -V(2, 1);
+    V(0, 2) = v(1); V(2, 0) = -V(0, 2);
+    V(1, 0) = v(2); V(0, 1) = -V(1, 0);
 
     return V;
 }
 
-
-Vector3 vee(const Matrix3 V)
+Vector3d vee(const Matrix3d V)
 {
-    Vector3 v;
-    Matrix3 E;
+    Vector3d v;
+    Matrix3d E;
 
     v.setZero();
     E = V + V.transpose();
 
-    if(E.norm() > 1.e-6)
+    if (E.norm() > 1.e-6)
     {
         std::cout << "vee WARNING: E.norm() = " << E.norm() << std::endl;
     }
@@ -38,31 +38,29 @@ Vector3 vee(const Matrix3 V)
     v(1) = V(0, 2);
     v(2) = V(1, 0);
 
-    return  v;
+    return v;
 }
-
 
 double sinx_over_x(const double x)
 {
     double y;
     double eps = 1.e-6;
-    if(abs(x) < eps)
+    if (std::abs(x) < eps)
     {
-        y =- pow(x, 10) / 39916800. + pow(x, 8) / 362880.
-             - pow(x, 6) / 5040. + pow(x, 4) / 120. - pow(x, 2) / 6. + 1.;
+        y = -std::pow(x, 10) / 39916800. + std::pow(x, 8) / 362880.
+            - std::pow(x, 6) / 5040. + std::pow(x, 4) / 120. - std::pow(x, 2) / 6. + 1.;
     }
     else
     {
-        y = sin(x) / x;
+        y = std::sin(x) / x;
     }
 
     return y;
 }
 
-
-Matrix3 expm_SO3(const Vector3 r)
+Matrix3d expm_SO3(const Vector3d r)
 {
-    Matrix3 R;
+    Matrix3d R;
     double theta, y, y2;
 
     theta = r.norm();
@@ -70,38 +68,37 @@ Matrix3 expm_SO3(const Vector3 r)
     y2 = sinx_over_x(theta / 2.);
 
     R.setIdentity();
-    R += y * hat(r) + 1. / 2. * pow(y2, 2) * hat(r) * hat(r);
+    R += y * hat(r) + 1. / 2. * std::pow(y2, 2) * hat(r) * hat(r);
 
     return R;
 }
 
-
-Vector3 logm_SO3(const Matrix3 R)
+Vector3d logm_SO3(const Matrix3d R)
 {
-    Vector3 r;
-    Matrix3 I;
+    Vector3d r;
+    Matrix3d I;
     double eps = 1.e-6;
 
     r.setZero();
     I.setIdentity();
-    if((I - R * R.transpose()).norm() > eps || abs(R.determinant() - 1) > eps)
+    if ((I - R * R.transpose()).norm() > eps || std::abs(R.determinant() - 1) > eps)
     {
         std::cout << "logm_SO3: error: R is not a rotation matrix" << std::endl;
     }
     else
     {
-        Eigen::EigenSolver<MatrixXd> eig(R);
+        Eigen::EigenSolver<Matrix3d> eig(R);
         double min_del_lam_1 = 1.0, cos_theta, theta;
         int i, i_min = -1;
-        Vector3 v;
-        Matrix3 R_new;
-        for(i = 0; i < 3; i++)
+        Vector3d v;
+        Matrix3d R_new;
+        for (i = 0; i < 3; i++)
         {
-            if(eig.eigenvectors().col(i).imag().norm() < eps)
+            if (eig.eigenvectors().col(i).imag().norm() < eps)
             {
-                if(pow(eig.eigenvalues()[i].real(), 2) - 1. < min_del_lam_1 )
+                if (std::pow(eig.eigenvalues()[i].real(), 2) - 1. < min_del_lam_1)
                 {
-                    min_del_lam_1 = pow(eig.eigenvalues()[i].real(), 2) - 1.0;
+                    min_del_lam_1 = std::pow(eig.eigenvalues()[i].real(), 2) - 1.0;
                     i_min = i;
                 }
             }
@@ -109,13 +106,13 @@ Vector3 logm_SO3(const Matrix3 R)
         v = eig.eigenvectors().col(i_min).real();
 
         cos_theta = (R.trace() - 1.0) / 2.0;
-        if(cos_theta > 1.0) cos_theta=1.0;
-        else if(cos_theta < -1.0)  cos_theta=-1.0;
+        if (cos_theta > 1.0) cos_theta = 1.0;
+        else if (cos_theta < -1.0) cos_theta = -1.0;
 
-        theta = acos(cos_theta);
+        theta = std::acos(cos_theta);
         R_new = expm_SO3(theta * v);
 
-        if((R - R_new).norm() > (R - R_new.transpose()).norm()) v =- v;
+        if ((R - R_new).norm() > (R - R_new.transpose()).norm()) v = -v;
 
         r = theta * v;
 
@@ -125,17 +122,16 @@ Vector3 logm_SO3(const Matrix3 R)
     return r;
 }
 
-
-bool assert_SO3(Matrix3 R,const char *R_name)
+bool assert_SO3(Matrix3d R, const char *R_name)
 {
     bool isSO3;
     double errO, errD;
-    Matrix3 eye3;
+    Matrix3d eye3;
     double eps = 1e-5;
 
     eye3.setIdentity();
     errO = (R.transpose() * R - eye3).norm();
-    errD = pow(1 - R.determinant(), 2);
+    errD = std::pow(1 - R.determinant(), 2);
 
     if (errO > eps || errD > eps)
     {
@@ -153,3 +149,5 @@ bool assert_SO3(Matrix3 R,const char *R_name)
 
     return isSO3;
 }
+
+#endif // FDCL_MATRIX_UTILS_HPP

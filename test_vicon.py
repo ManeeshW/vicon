@@ -7,7 +7,7 @@ def main():
     vicon_tracker = fdcl_vicon_module.vicon()
 
     # Open a connection to the VICON system
-    vicon_tracker.open("Quad@192.168.10.1")  # You can pass a specific object string if needed, e.g., "racing@192.168.10.1"
+    vicon_tracker.open("OriginsX@192.168.10.1")  # You can pass a specific object string if needed, e.g., "racing@192.168.10.1"
 
     try:
         print("Starting VICON tracking... Press Ctrl+C to stop.")

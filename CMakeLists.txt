@@ -3,21 +3,23 @@ project(FDCL-VICON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON) 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Find pybind11
+# Find Python using modern FindPython module
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+# Find Eigen3
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 add_definitions(${EIGEN3_DEFINITIONS})
 
 # maneesh_vrpn2025: Explicitly find VRPN and Quat libraries
-find_library(VRPN_LIB vrpn HINTS /usr/local/lib)
-find_library(QUAT_LIB quat HINTS /usr/local/lib)
+find_library(VRPN_LIB vrpn HINTS /opt/homebrew/lib /usr/local/lib)
+find_library(QUAT_LIB quat HINTS /opt/homebrew/lib /usr/local/lib)
 if (NOT VRPN_LIB)
     message(FATAL_ERROR "VRPN library not found. Please install VRPN.")
 endif()
@@ -37,7 +39,7 @@ target_link_libraries(fdcl_vicon PUBLIC ${VRPN_LIB} ${QUAT_LIB})  # maneesh_vrpn
 
 # Create Python module
 pybind11_add_module(fdcl_vicon_module bindings/vicon_bindings.cpp)
-target_link_libraries(fdcl_vicon_module PRIVATE fdcl_vicon ${VRPN_LIB})  # maneesh_vrpn2025: Use variable, removed redundant vrpn
+target_link_libraries(fdcl_vicon_module PRIVATE fdcl_vicon ${VRPN_LIB} Python::Module)  # maneesh_vrpn2025: Link Python module
 
 # Add executable and set compile options
 add_executable(test_fdcl_vicon main.cpp)
