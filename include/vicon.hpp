@@ -1,22 +1,19 @@
-#ifndef FDCL_VICON_H
-#define FDCL_VICON_H
+#ifndef VICON_H
+#define VICON_H
 
 #include <stdio.h>
 #include <iostream>
 #include <vrpn_Tracker.h>
 #include <Eigen/Dense>
-#include "fdcl/matrix_utils.hpp"
 
-namespace fdcl
-{
-    
+
 class vicon
 {
 public:
     vicon();
     ~vicon();
 
-    std::string object = "racing@192.168.10.1";
+    std::string object = "OriginsX@192.168.10.1";
     static void callback(void* userdata, const vrpn_TRACKERCB tdata);
 
     bool on = false;
@@ -34,6 +31,5 @@ private:
     Eigen::Matrix3d R_vm;
 };
 
-}  // end of namespace fdcl
 
 #endif

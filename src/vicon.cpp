@@ -1,21 +1,21 @@
-#include "fdcl/vicon.hpp"
+#include "vicon.hpp"
 
-fdcl::vicon::vicon()
+vicon::vicon()
 {
     on = true;
 }
 
 
-fdcl::vicon::~vicon()
+vicon::~vicon()
 {
     if (on)
     {
-        fdcl::vicon::close();
+        vicon::close();
     }
 }
 
 
-void fdcl::vicon::close()
+void vicon::close()
 {
     delete tracker;
     on = false;
@@ -24,29 +24,29 @@ void fdcl::vicon::close()
 }
 
 
-void fdcl::vicon::open(std::string object)
+void vicon::open(std::string object)
 {
     tracker = new vrpn_Tracker_Remote(object.c_str());
-    tracker->register_change_handler(this, fdcl::vicon::callback);
+    tracker->register_change_handler(this, vicon::callback);
 
     std::cout << "VICON: object opened" << std::endl;
 }
 
 
-void fdcl::vicon::open()
+void vicon::open()
 {
     open(object);
 }
 
 
-std::pair<Eigen::Vector3d, Eigen::Matrix3d> fdcl::vicon::loop() {
+std::pair<Eigen::Vector3d, Eigen::Matrix3d> vicon::loop() {
     tracker->mainloop();
     return {x_v, R_vm};  // Return the position and rotation matrix
 }
 
-void fdcl::vicon::callback(void* userdata, const vrpn_TRACKERCB tdata)
+void vicon::callback(void* userdata, const vrpn_TRACKERCB tdata)
 {
-    fdcl::vicon* self = static_cast<fdcl::vicon*>(userdata);
+    vicon* self = static_cast<vicon*>(userdata);
 
     // Position
     self->x_v(0) = tdata.pos[0];
