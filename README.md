@@ -7,7 +7,7 @@ Please note that this external callback needs to be a static function.
 
 ## Dependencies
 
-### VRPN
+### VRPN (depreceted old method)
 ```
 git submodule update --init
 cd libraries
