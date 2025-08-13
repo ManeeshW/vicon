@@ -1,13 +1,35 @@
 import time
-import vicon_tracker  # This should match the name of your compiled Python module
+import vicon_tracker  # This matches the compiled Python module
 import numpy as np
+import os
+
+def load_config(config_file="config.cfg"):
+    """Read the Vicon object name from config.cfg."""
+    object_name = "OriginsX@192.168.10.1"  # Default fallback
+    try:
+        with open(config_file, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if line.startswith("object:"):
+                    object_name = line.split("object:")[1].strip().strip('"')
+                    break
+        print(f"Loaded Vicon object: {object_name}")
+    except FileNotFoundError:
+        print(f"Config file {config_file} not found, using default object: {object_name}")
+    except Exception as e:
+        print(f"Error reading config file: {e}, using default object: {object_name}")
+    return object_name
 
 def main():
+    # Load the Vicon object name from config.cfg
+    config_file = os.path.join(os.path.dirname(__file__), "config.cfg")
+    object_name = load_config(config_file)
+
     # Create an instance of the VICON class
     vicon = vicon_tracker.vicon()
 
     # Open a connection to the VICON system
-    vicon.open("OriginsX@192.168.10.1")  # You can pass a specific object string if needed, e.g., "racing@192.168.10.1"
+    vicon.open(object_name)
 
     try:
         print("Starting VICON tracking... Press Ctrl+C to stop.")

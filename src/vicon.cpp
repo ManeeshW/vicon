@@ -1,10 +1,17 @@
 #include "vicon.hpp"
+#include <fstream>
+#include <sstream>
+#include <string>
 
 vicon::vicon()
 {
     on = true;
+    // Load configuration from config.cfg
+    if (!loadConfig("../config.cfg")) {
+        std::cerr << "VICON: Failed to load config file, using default object" << std::endl;
+        object = "Origins@192.168.10.1"; // Fallback default
+    }
 }
-
 
 vicon::~vicon()
 {
@@ -14,7 +21,6 @@ vicon::~vicon()
     }
 }
 
-
 void vicon::close()
 {
     delete tracker;
@@ -22,7 +28,6 @@ void vicon::close()
 
     std::cout << "VICON: object closed" << std::endl;
 }
-
 
 void vicon::open(std::string object)
 {
@@ -32,16 +37,53 @@ void vicon::open(std::string object)
     std::cout << "VICON: object opened" << std::endl;
 }
 
-
 void vicon::open()
 {
     open(object);
 }
 
-
 std::pair<Eigen::Vector3d, Eigen::Matrix3d> vicon::loop() {
     tracker->mainloop();
     return {x_v, R_vm};  // Return the position and rotation matrix
+}
+
+bool vicon::loadConfig(const std::string& configFile)
+{
+    std::ifstream file(configFile);
+    if (!file.is_open()) {
+        std::cerr << "VICON: Could not open config file: " << configFile << std::endl;
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        // Remove leading/trailing whitespace
+        line.erase(0, line.find_first_not_of(" \t"));
+        line.erase(line.find_last_not_of(" \t") + 1);
+
+        // Skip empty lines or lines that don't contain object definition
+        if (line.empty() || line.find("object:") == std::string::npos) {
+            continue;
+        }
+
+        // Parse the object line
+        size_t pos = line.find("object:");
+        if (pos != std::string::npos) {
+            object = line.substr(pos + 7); // Extract after "object:"
+            object.erase(0, object.find_first_not_of(" \t\"")); // Remove leading spaces/quotes
+            object.erase(object.find_last_not_of(" \t\"") + 1); // Remove trailing spaces/quotes
+            break;
+        }
+    }
+
+    file.close();
+    if (object.empty()) {
+        std::cerr << "VICON: No valid object found in config file" << std::endl;
+        return false;
+    }
+
+    std::cout << "VICON: Loaded object: " << object << std::endl;
+    return true;
 }
 
 void vicon::callback(void* userdata, const vrpn_TRACKERCB tdata)
